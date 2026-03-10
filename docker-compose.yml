@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://aws-1-eu-west-1.pooler.supabase.com:6543/postgres?prepareThreshold=0
+      SPRING_DATASOURCE_USERNAME: postgres.vuizwlfbxoryiqrxxebr
+      SPRING_DATASOURCE_PASSWORD: JkpgKxdrlaC49DRz
+      TMDB_API_KEY: ${TMDB_API_KEY}
+    env_file:
+      - .env
