@@ -31,8 +31,8 @@ public class CorsConfig implements WebMvcConfigurer {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://localhost:3000",
-                "https://cine-byte-fron-pm8tjuoo3-mrvladucus-projects.vercel.app"
+                "https://cinebyte.es",
+                "https://www.cinebyte.es"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
