@@ -22,7 +22,7 @@ public class TmdbService {
 
     public Object getMovieDetails(Long movieId) {
         return tmdbRestClient.get()
-                .uri("/movie/{id}?language=es-ES", movieId)
+                .uri("/movie/{id}?language=es-ES&append_to_response=videos", movieId)
                 .retrieve()
                 .body(Object.class);
     }
@@ -80,7 +80,7 @@ public class TmdbService {
 
     public Object getTvDetails(Long tvId) {
         return tmdbRestClient.get()
-                .uri("/tv/{id}?language=es-ES", tvId)
+                .uri("/tv/{id}?language=es-ES&append_to_response=videos", tvId)
                 .retrieve()
                 .body(Object.class);
     }
