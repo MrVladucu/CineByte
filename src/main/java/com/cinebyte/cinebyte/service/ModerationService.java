@@ -1,5 +1,7 @@
 package com.cinebyte.cinebyte.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -14,8 +16,10 @@ public class ModerationService {
     private String geminiApiKey;
 
     private final RestClient restClient;
+    private final ObjectMapper objectMapper;
 
     public ModerationService() {
+        this.objectMapper = new ObjectMapper();
         this.restClient = RestClient.builder()
                 .baseUrl("https://generativelanguage.googleapis.com")
                 .build();
@@ -58,41 +62,36 @@ public class ModerationService {
             System.out.println(response);
             System.out.println("===========================");
 
-            String jsonText = extractTextFromGeminiResponse(response);
+            JsonNode root = objectMapper.readTree(response);
+            String jsonText = root.path("candidates")
+                    .get(0)
+                    .path("content")
+                    .path("parts")
+                    .get(0)
+                    .path("text")
+                    .asText()
+                    .replaceAll("```json", "")
+                    .replaceAll("```", "")
+                    .trim();
+
             System.out.println("=== EXTRACTED TEXT ===");
             System.out.println(jsonText);
             System.out.println("======================");
-            jsonText = jsonText.replaceAll("```json", "").replaceAll("```", "").trim();
 
-            if (jsonText.contains("\"approved\": false") || jsonText.contains("\"approved\":false")) {
-                String reason = extractReason(jsonText);
+            JsonNode moderationResult = objectMapper.readTree(jsonText);
+            boolean approved = moderationResult.path("approved").asBoolean(true);
+            
+            if (!approved) {
+                String reason = moderationResult.path("reason").asText("Contenido inapropiado detectado");
                 return Map.of("approved", false, "reason", reason);
             }
             return Map.of("approved", true);
 
         } catch (Exception e) {
-            System.out.println("=== MODERATION ERROR ===");
-            System.out.println(e.getMessage());
+            System.err.println("=== MODERATION ERROR ===");
+            System.err.println(e.getMessage());
             e.printStackTrace();
-            System.out.println("========================");
-            return Map.of("approved", true);
+            return Map.of("approved", false, "reason", "Error en el servicio de moderación. Inténtalo de nuevo.");
         }
-    }
-
-    private String extractTextFromGeminiResponse(String response) {
-        int textIndex = response.indexOf("\"text\": \"");
-        if (textIndex == -1) return "{\"approved\": true}";
-        int start = textIndex + 9;
-        int end = response.indexOf("\"", start);
-        return response.substring(start, end).replace("\\n", "").replace("\\\"", "\"");
-    }
-
-    private String extractReason(String json) {
-        int reasonIndex = json.indexOf("\"reason\": \"");
-        if (reasonIndex == -1) reasonIndex = json.indexOf("\"reason\":\"");
-        if (reasonIndex == -1) return "Contenido inapropiado detectado";
-        int start = json.indexOf("\"", reasonIndex + 9) + 1;
-        int end = json.indexOf("\"", start);
-        return json.substring(start, end);
     }
 }
