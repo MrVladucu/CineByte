@@ -15,7 +15,7 @@ public class TmdbService {
 
     public Object searchMovies(String query, int page) {
         return tmdbRestClient.get()
-                .uri("/search/movie?query={query}&page={page}&language=es-ES", query, page)
+                .uri("/search/multi?query={query}&page={page}&language=es-ES", query, page)
                 .retrieve()
                 .body(Object.class);
     }
@@ -66,6 +66,35 @@ public class TmdbService {
         return tmdbRestClient.get()
                 .uri("/discover/movie?with_genres={genre}&sort_by={sort}&page={page}&language=es-ES",
                         genreId, sortBy, page)
+                .retrieve()
+                .body(Object.class);
+    }
+
+    // --- TV SHOWS ---
+    public Object getTrendingTv() {
+        return tmdbRestClient.get()
+                .uri("/trending/tv/week?language=es-ES")
+                .retrieve()
+                .body(Object.class);
+    }
+
+    public Object getTvDetails(Long tvId) {
+        return tmdbRestClient.get()
+                .uri("/tv/{id}?language=es-ES", tvId)
+                .retrieve()
+                .body(Object.class);
+    }
+
+    public Object getTvCredits(Long tvId) {
+        return tmdbRestClient.get()
+                .uri("/tv/{id}/credits?language=es-ES", tvId)
+                .retrieve()
+                .body(Object.class);
+    }
+
+    public Object getSimilarTv(Long tvId) {
+        return tmdbRestClient.get()
+                .uri("/tv/{id}/similar?language=es-ES", tvId)
                 .retrieve()
                 .body(Object.class);
     }

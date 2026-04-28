@@ -57,4 +57,25 @@ public class TmdbController {
             @RequestParam(defaultValue = "1") int page) {
         return ResponseEntity.ok(tmdbService.discoverMovies(genreId, sortBy, page));
     }
+
+    // --- TV SHOWS ---
+    @GetMapping("/tv/trending")
+    public ResponseEntity<Object> getTrendingTv() {
+        return ResponseEntity.ok(tmdbService.getTrendingTv());
+    }
+
+    @GetMapping("/tv/{id}")
+    public ResponseEntity<Object> getTvDetails(@PathVariable Long id) {
+        return ResponseEntity.ok(tmdbService.getTvDetails(id));
+    }
+
+    @GetMapping("/tv/{id}/credits")
+    public ResponseEntity<Object> getTvCredits(@PathVariable Long id) {
+        return ResponseEntity.ok(tmdbService.getTvCredits(id));
+    }
+
+    @GetMapping("/tv/{id}/similar")
+    public ResponseEntity<Object> getSimilarTv(@PathVariable Long id) {
+        return ResponseEntity.ok(tmdbService.getSimilarTv(id));
+    }
 }
