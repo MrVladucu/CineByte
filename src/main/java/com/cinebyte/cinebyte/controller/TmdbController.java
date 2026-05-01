@@ -1,5 +1,6 @@
 package com.cinebyte.cinebyte.controller;
 
+import com.cinebyte.cinebyte.service.AiSearchService;
 import com.cinebyte.cinebyte.service.TmdbService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,12 +12,16 @@ import org.springframework.web.bind.annotation.*;
 public class TmdbController {
 
     private final TmdbService tmdbService;
+    private final AiSearchService aiSearchService;
 
     @GetMapping("/search")
-    public ResponseEntity<Object> searchMovies(
-            @RequestParam String query,
-            @RequestParam(defaultValue = "1") int page) {
+    public ResponseEntity<Object> search(@RequestParam String query, @RequestParam(defaultValue = "1") int page) {
         return ResponseEntity.ok(tmdbService.searchMovies(query, page));
+    }
+
+    @GetMapping("/ai-search")
+    public ResponseEntity<Object> aiSearch(@RequestParam String query) {
+        return ResponseEntity.ok(aiSearchService.searchByVibe(query));
     }
 
     @GetMapping("/movies/{id}")

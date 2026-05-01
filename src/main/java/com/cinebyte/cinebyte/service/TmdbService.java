@@ -77,6 +77,20 @@ public class TmdbService {
                 .body(Object.class);
     }
 
+    public Object discoverWithFilters(com.fasterxml.jackson.databind.JsonNode filters) {
+        StringBuilder uriBuilder = new StringBuilder("/discover/movie?language=es-ES");
+        filters.fields().forEachRemaining(entry -> {
+            if (!entry.getValue().asText().isEmpty()) {
+                uriBuilder.append("&").append(entry.getKey()).append("=").append(entry.getValue().asText());
+            }
+        });
+
+        return tmdbRestClient.get()
+                .uri(uriBuilder.toString())
+                .retrieve()
+                .body(Object.class);
+    }
+
     // --- TV SHOWS ---
     public Object getTrendingTv() {
         return tmdbRestClient.get()
