@@ -48,6 +48,13 @@ public class TmdbService {
                 .body(Object.class);
     }
 
+    public Object getMovieProviders(Long movieId) {
+        return tmdbRestClient.get()
+                .uri("/movie/{id}/watch/providers", movieId)
+                .retrieve()
+                .body(Object.class);
+    }
+
     public Object getSimilarMovies(Long movieId) {
         return tmdbRestClient.get()
                 .uri("/movie/{id}/similar?language=es-ES", movieId)
@@ -88,6 +95,13 @@ public class TmdbService {
     public Object getTvCredits(Long tvId) {
         return tmdbRestClient.get()
                 .uri("/tv/{id}/credits?language=es-ES", tvId)
+                .retrieve()
+                .body(Object.class);
+    }
+
+    public Object getTvProviders(Long tvId) {
+        return tmdbRestClient.get()
+                .uri("/tv/{id}/watch/providers", tvId)
                 .retrieve()
                 .body(Object.class);
     }

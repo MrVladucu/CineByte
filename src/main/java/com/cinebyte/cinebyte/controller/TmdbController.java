@@ -40,22 +40,27 @@ public class TmdbController {
         return ResponseEntity.ok(tmdbService.getMovieCredits(id));
     }
 
+    @GetMapping("/movies/{id}/providers")
+    public ResponseEntity<Object> getMovieProviders(@PathVariable Long id) {
+        return ResponseEntity.ok(tmdbService.getMovieProviders(id));
+    }
+
     @GetMapping("/movies/{id}/similar")
     public ResponseEntity<Object> getSimilarMovies(@PathVariable Long id) {
         return ResponseEntity.ok(tmdbService.getSimilarMovies(id));
     }
 
-    @GetMapping("/genres")
+    @GetMapping("/movies/genres")
     public ResponseEntity<Object> getMovieGenres() {
         return ResponseEntity.ok(tmdbService.getMovieGenres());
     }
 
-    @GetMapping("/discover")
+    @GetMapping("/movies/discover")
     public ResponseEntity<Object> discoverMovies(
-            @RequestParam(required = false) String genreId,
-            @RequestParam(defaultValue = "popularity.desc") String sortBy,
-            @RequestParam(defaultValue = "1") int page) {
-        return ResponseEntity.ok(tmdbService.discoverMovies(genreId, sortBy, page));
+            @RequestParam(required = false, defaultValue = "") String genre,
+            @RequestParam(required = false, defaultValue = "popularity.desc") String sort,
+            @RequestParam(required = false, defaultValue = "1") int page) {
+        return ResponseEntity.ok(tmdbService.discoverMovies(genre, sort, page));
     }
 
     // --- TV SHOWS ---
@@ -72,6 +77,11 @@ public class TmdbController {
     @GetMapping("/tv/{id}/credits")
     public ResponseEntity<Object> getTvCredits(@PathVariable Long id) {
         return ResponseEntity.ok(tmdbService.getTvCredits(id));
+    }
+
+    @GetMapping("/tv/{id}/providers")
+    public ResponseEntity<Object> getTvProviders(@PathVariable Long id) {
+        return ResponseEntity.ok(tmdbService.getTvProviders(id));
     }
 
     @GetMapping("/tv/{id}/similar")
