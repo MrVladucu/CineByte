@@ -93,4 +93,15 @@ public class TmdbController {
     public ResponseEntity<Object> getSimilarTv(@PathVariable Long id) {
         return ResponseEntity.ok(tmdbService.getSimilarTv(id));
     }
+
+    // --- PERSON / ACTORS ---
+    @GetMapping("/person/{id}")
+    public ResponseEntity<Object> getPersonDetails(@PathVariable Long id) {
+        return ResponseEntity.ok(tmdbService.getPersonDetails(id));
+    }
+
+    @GetMapping("/person/{id}/combined_credits")
+    public ResponseEntity<Object> getPersonCombinedCredits(@PathVariable Long id) {
+        return ResponseEntity.ok(tmdbService.getPersonCombinedCredits(id));
+    }
 }
