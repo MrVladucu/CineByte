@@ -94,6 +94,11 @@ public class TmdbController {
         return ResponseEntity.ok(tmdbService.getSimilarTv(id));
     }
 
+    @GetMapping("/tv/{id}/season/{seasonNumber}")
+    public ResponseEntity<Object> getTvSeason(@PathVariable Long id, @PathVariable Integer seasonNumber) {
+        return ResponseEntity.ok(tmdbService.getTvSeason(id, seasonNumber));
+    }
+
     // --- PERSON / ACTORS ---
     @GetMapping("/person/{id}")
     public ResponseEntity<Object> getPersonDetails(@PathVariable Long id) {

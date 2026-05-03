@@ -127,6 +127,13 @@ public class TmdbService {
                 .body(Object.class);
     }
 
+    public Object getTvSeason(Long tvId, Integer seasonNumber) {
+        return tmdbRestClient.get()
+                .uri("/tv/{id}/season/{seasonNumber}?language=es-ES", tvId, seasonNumber)
+                .retrieve()
+                .body(Object.class);
+    }
+
     // --- PERSON / ACTORS ----
     public Object getPersonDetails(Long personId) {
         return tmdbRestClient.get()
