@@ -127,7 +127,7 @@ public class TmdbService {
                 .body(Object.class);
     }
 
-    // --- PERSON / ACTORS ---
+    // --- PERSON / ACTORS ----
     public Object getPersonDetails(Long personId) {
         return tmdbRestClient.get()
                 .uri("/person/{id}?language=es-ES&append_to_response=external_ids", personId)
