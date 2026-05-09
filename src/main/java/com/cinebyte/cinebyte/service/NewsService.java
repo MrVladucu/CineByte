@@ -1,6 +1,7 @@
 package com.cinebyte.cinebyte.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
@@ -15,22 +16,12 @@ public class NewsService {
 
     private final RestTemplate restTemplate;
 
-    private String cachedNews = null;
-    private long lastFetchTime = 0;
-    private static final long CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 hours
-
     public NewsService() {
         this.restTemplate = new RestTemplate();
     }
 
+    @Cacheable(value = "newsCache")
     public String getMovieNews() {
-        long currentTime = System.currentTimeMillis();
-        
-        if (cachedNews != null && (currentTime - lastFetchTime) < CACHE_DURATION_MS) {
-            logger.info("Returning cached news");
-            return cachedNews;
-        }
-
         if (gnewsApiKey == null || gnewsApiKey.isEmpty() || "GNEWS_API_KEY".equals(gnewsApiKey)) {
             logger.warn("GNews API Key is missing or default. Returning empty news array.");
             return "{\"articles\": []}";
@@ -42,15 +33,10 @@ public class NewsService {
             String response = restTemplate.getForObject(url, String.class);
             
             if (response != null && !response.isEmpty()) {
-                cachedNews = response;
-                lastFetchTime = currentTime;
-                return cachedNews;
+                return response;
             }
         } catch (Exception e) {
             logger.error("Error fetching news from GNews: {}", e.getMessage());
-            if (cachedNews != null) {
-                return cachedNews;
-            }
         }
         
         return "{\"articles\": []}";
