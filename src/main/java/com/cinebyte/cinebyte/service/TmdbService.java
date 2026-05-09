@@ -1,11 +1,13 @@
 package com.cinebyte.cinebyte.service;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 @Service
+@CircuitBreaker(name = "tmdbApi")
 public class TmdbService {
 
     private final RestClient tmdbRestClient;

@@ -2,6 +2,7 @@ package com.cinebyte.cinebyte.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ public class NewsService {
     }
 
     @Cacheable(value = "newsCache")
+    @CircuitBreaker(name = "newsApi")
     public String getMovieNews() {
         if (gnewsApiKey == null || gnewsApiKey.isEmpty() || "GNEWS_API_KEY".equals(gnewsApiKey)) {
             logger.warn("GNews API Key is missing or default. Returning empty news array.");
