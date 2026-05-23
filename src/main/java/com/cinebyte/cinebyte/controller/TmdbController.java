@@ -68,6 +68,16 @@ public class TmdbController {
         return ResponseEntity.ok(tmdbService.discoverMovies(genre, sort, page));
     }
 
+    @GetMapping("/movies/{id}/recommendations")
+    public ResponseEntity<Object> getMovieRecommendations(@PathVariable Long id) {
+        return ResponseEntity.ok(tmdbService.getMovieRecommendations(id));
+    }
+
+    @GetMapping("/tv/{id}/recommendations")
+    public ResponseEntity<Object> getTvRecommendations(@PathVariable Long id) {
+        return ResponseEntity.ok(tmdbService.getTvRecommendations(id));
+    }
+
     // --- TV SHOWS ---
     @GetMapping("/tv/trending")
     public ResponseEntity<Object> getTrendingTv() {

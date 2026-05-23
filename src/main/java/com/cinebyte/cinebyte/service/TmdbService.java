@@ -140,6 +140,22 @@ public class TmdbService {
                 .body(Object.class);
     }
 
+    @Cacheable(value = "tmdbCache", key = "'recommendations_movie_' + #movieId")
+    public Object getMovieRecommendations(Long movieId) {
+        return tmdbRestClient.get()
+                .uri("/movie/{id}/recommendations?language=es-ES", movieId)
+                .retrieve()
+                .body(Object.class);
+    }
+
+    @Cacheable(value = "tmdbCache", key = "'recommendations_tv_' + #tvId")
+    public Object getTvRecommendations(Long tvId) {
+        return tmdbRestClient.get()
+                .uri("/tv/{id}/recommendations?language=es-ES", tvId)
+                .retrieve()
+                .body(Object.class);
+    }
+
     private String resolveKeywordId(String query) {
         try {
             Object response = tmdbRestClient.get()
