@@ -1,5 +1,7 @@
 package com.cinebyte.cinebyte.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
@@ -11,6 +13,7 @@ import org.springframework.web.client.RestClient;
 public class TmdbService {
 
     private final RestClient tmdbRestClient;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public TmdbService(@Qualifier("tmdbRestClient") RestClient tmdbRestClient) {
         this.tmdbRestClient = tmdbRestClient;
@@ -90,7 +93,7 @@ public class TmdbService {
     }
 
     @Cacheable(value = "tmdbCache", key = "'discover_filters_' + #filters.hashCode()")
-    public Object discoverWithFilters(com.fasterxml.jackson.databind.JsonNode filters) {
+    public Object discoverWithFilters(JsonNode filters) {
         StringBuilder uriBuilder = new StringBuilder("/discover/movie?language=es-ES");
         filters.fields().forEachRemaining(entry -> {
             if (!entry.getValue().asText().isEmpty()) {
@@ -102,6 +105,63 @@ public class TmdbService {
                 .uri(uriBuilder.toString())
                 .retrieve()
                 .body(Object.class);
+    }
+
+    @Cacheable(value = "tmdbCache", key = "'search_filters_' + #query + '_' + #filters.hashCode()")
+    public Object searchWithFilters(String query, JsonNode filters) {
+        String keywordIds = resolveKeywordId(query);
+
+        StringBuilder uriBuilder;
+
+        if (keywordIds != null) {
+            uriBuilder = new StringBuilder("/discover/movie?language=es-ES&sort_by=popularity.desc");
+            uriBuilder.append("&with_keywords=").append(keywordIds);
+        } else {
+            uriBuilder = new StringBuilder("/search/movie?language=es-ES");
+            uriBuilder.append("&query=").append(query);
+        }
+
+        if (filters.has("primary_release_date.gte")) {
+            uriBuilder.append("&primary_release_date.gte=")
+                    .append(filters.get("primary_release_date.gte").asText());
+        }
+        if (filters.has("primary_release_date.lte")) {
+            uriBuilder.append("&primary_release_date.lte=")
+                    .append(filters.get("primary_release_date.lte").asText());
+        }
+        if (filters.has("vote_average.gte")) {
+            uriBuilder.append("&vote_average.gte=")
+                    .append(filters.get("vote_average.gte").asText());
+        }
+
+        return tmdbRestClient.get()
+                .uri(uriBuilder.toString())
+                .retrieve()
+                .body(Object.class);
+    }
+
+    private String resolveKeywordId(String query) {
+        try {
+            Object response = tmdbRestClient.get()
+                    .uri("/search/keyword?query={query}", query)
+                    .retrieve()
+                    .body(Object.class);
+
+            JsonNode root = objectMapper.valueToTree(response);
+            JsonNode results = root.path("results");
+
+            if (results.isArray() && results.size() > 0) {
+                StringBuilder ids = new StringBuilder();
+                for (int i = 0; i < results.size(); i++) {
+                    if (i > 0) ids.append("|");
+                    ids.append(results.get(i).path("id").asText());
+                }
+                return ids.toString();
+            }
+        } catch (Exception e) {
+            System.err.println("Keyword resolve error for query '" + query + "': " + e.getMessage());
+        }
+        return null;
     }
 
     // --- TV SHOWS ---
@@ -153,7 +213,7 @@ public class TmdbService {
                 .body(Object.class);
     }
 
-    // --- PERSON / ACTORS ----
+    // --- PERSON / ACTORS ---
     @Cacheable(value = "tmdbCache", key = "'person_details_' + #personId")
     public Object getPersonDetails(Long personId) {
         return tmdbRestClient.get()

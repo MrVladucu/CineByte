@@ -33,15 +33,29 @@ public class AiSearchService {
     
     Petición del usuario: "%s"
     
-    Debes extraer:
-    1. Géneros (usa los IDs de TMDB: Acción: 28, Aventura: 12, Animación: 16, Comedia: 35, Crimen: 80, Documental: 99, Drama: 18, Familia: 10751, Fantasía: 14, Historia: 36, Terror: 27, Música: 10402, Misterio: 9648, Romance: 10749, C. Ficción: 878, Suspense: 53, Bélica: 10752, Western: 37).
-    2. Rango de años (primary_release_date.gte y primary_release_date.lte en formato YYYY-MM-DD).
-    3. Idioma original si se menciona un país (with_original_language: ja=japonés, ko=coreano, fr=francés, it=italiano, es=español, de=alemán, zh=chino, hi=hindi, en=inglés).
-    4. Orden (sort_by: popularity.desc, vote_average.desc, primary_release_date.desc).
-    5. Puntuación mínima si se menciona calidad (vote_average.gte: número del 1 al 10).
+    REGLA PRINCIPAL: Decide entre dos modos:
+    
+    MODO DISCOVER (usa géneros y filtros): Úsalo cuando la temática se puede representar bien con géneros de TMDB. Por ejemplo: superhéroes → Acción+C.Ficción, romance → Romance, guerra → Bélica.
+    
+    MODO SEARCH (usa search_query): Úsalo SOLO cuando la temática es demasiado específica para representarse con géneros y necesita búsqueda textual. Por ejemplo: vampiros, zombies, piratas, ninjas, tiburones, dinosaurios, muñecos asesinos. En ese caso pon la temática en inglés en "search_query".
+    
+    Parámetros disponibles para MODO DISCOVER:
+    - with_genres: IDs separados por coma (Acción: 28, Aventura: 12, Animación: 16, Comedia: 35, Crimen: 80, Documental: 99, Drama: 18, Familia: 10751, Fantasía: 14, Historia: 36, Terror: 27, Música: 10402, Misterio: 9648, Romance: 10749, C. Ficción: 878, Suspense: 53, Bélica: 10752, Western: 37)
+    - primary_release_date.gte y primary_release_date.lte en formato YYYY-MM-DD
+    - with_original_language: ja, ko, fr, it, es, de, zh, hi, en
+    - sort_by: popularity.desc, vote_average.desc, primary_release_date.desc
+    - vote_average.gte: número del 1 al 10
+    
+    Parámetros disponibles para MODO SEARCH:
+    - search_query: temática en inglés (ej: "vampires", "zombies", "sharks")
+    - primary_release_date.gte y primary_release_date.lte en formato YYYY-MM-DD
+    - vote_average.gte: número del 1 al 10
+    
+    Puedes mezclar search_query con filtros de año o puntuación si la petición lo indica.
     
     Responde ÚNICAMENTE con un JSON con este formato exacto, sin texto adicional ni markdown:
     {
+      "search_query": "vampires",
       "with_genres": "ID1,ID2",
       "primary_release_date.gte": "YYYY-MM-DD",
       "primary_release_date.lte": "YYYY-MM-DD",
@@ -49,7 +63,7 @@ public class AiSearchService {
       "sort_by": "popularity.desc",
       "vote_average.gte": "7"
     }
-    Incluye solo los campos que apliquen. Omite los que no sean relevantes.
+    Incluye solo los campos que apliquen. Omite los que no sean relevantes. Nunca uses search_query y with_genres a la vez.
     """.formatted(query);
 
         try {
@@ -89,7 +103,14 @@ public class AiSearchService {
             System.out.println("=========================");
 
             JsonNode filters = objectMapper.readTree(jsonText);
-            Object tmdbResult = tmdbService.discoverWithFilters(filters);
+
+            Object tmdbResult;
+            if (filters.has("search_query") && !filters.get("search_query").asText().isBlank()) {
+                String searchQuery = filters.get("search_query").asText();
+                tmdbResult = tmdbService.searchWithFilters(searchQuery, filters);
+            } else {
+                tmdbResult = tmdbService.discoverWithFilters(filters);
+            }
 
             System.out.println("=== TMDB RESULT OK ===");
 
@@ -102,6 +123,5 @@ public class AiSearchService {
             System.out.println("=======================");
             return Map.of("error", "Error processing AI search");
         }
-
     }
 }
