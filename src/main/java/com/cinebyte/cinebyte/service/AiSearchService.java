@@ -62,7 +62,7 @@ public class AiSearchService {
             System.out.println("=== CALLING GEMINI ===");
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemma-3-12b-it:generateContent?key=" + geminiApiKey)
+                    .uri("/v1beta/models/gemini-2.5-flash:generateContent?key=" + geminiApiKey)
                     .header("Content-Type", "application/json")
                     .body(requestBody)
                     .retrieve()
