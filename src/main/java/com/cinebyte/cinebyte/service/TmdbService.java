@@ -232,10 +232,25 @@ public class TmdbService {
     // --- PERSON / ACTORS ---
     @Cacheable(value = "tmdbCache", key = "'person_details_' + #personId")
     public Object getPersonDetails(Long personId) {
-        return tmdbRestClient.get()
+        Object response = tmdbRestClient.get()
                 .uri("/person/{id}?language=es-ES&append_to_response=external_ids", personId)
                 .retrieve()
                 .body(Object.class);
+
+        try {
+            JsonNode root = objectMapper.valueToTree(response);
+            String biography = root.path("biography").asText("");
+            if (biography.isBlank()) {
+                return tmdbRestClient.get()
+                        .uri("/person/{id}?language=en-US&append_to_response=external_ids", personId)
+                        .retrieve()
+                        .body(Object.class);
+            }
+        } catch (Exception e) {
+            System.err.println("Person details fallback error: " + e.getMessage());
+        }
+
+        return response;
     }
 
     @Cacheable(value = "tmdbCache", key = "'person_credits_' + #personId")
