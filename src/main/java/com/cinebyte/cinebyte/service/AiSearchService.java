@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,8 @@ public class AiSearchService {
 
     @Value("${gemini.api.key}")
     private String geminiApiKey;
+    @Value("${gemini.model:gemma-4-26b-a4b-it}")
+    private String geminiModel;
 
     private final RestClient restClient;
     private final TmdbService tmdbService;
@@ -76,7 +79,7 @@ public class AiSearchService {
             System.out.println("=== CALLING GEMINI ===");
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemma-4-26b:generateContent?key=" + geminiApiKey)
+                    .uri("/v1beta/models/" + geminiModel + ":generateContent?key=" + geminiApiKey)
                     .header("Content-Type", "application/json")
                     .body(requestBody)
                     .retrieve()
@@ -116,6 +119,12 @@ public class AiSearchService {
 
             return tmdbResult;
 
+        } catch (HttpClientErrorException.NotFound nf) {
+            System.out.println("=== AI SEARCH ERROR: MODEL NOT FOUND ===");
+            System.out.println("Requested model: " + geminiModel);
+            System.out.println(nf.getResponseBodyAsString());
+            nf.printStackTrace();
+            return Map.of("error", "Modelo de IA no encontrado o no compatible con generateContent. Ajusta GEMINI_MODEL.");
         } catch (Exception e) {
             System.out.println("=== AI SEARCH ERROR ===");
             System.out.println(e.getMessage());

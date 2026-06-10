@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,8 @@ public class ModerationService {
 
     @Value("${gemini.api.key}")
     private String geminiApiKey;
+    @Value("${gemini.model:gemma-4-26b-a4b-it}")
+    private String geminiModel;
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
@@ -52,7 +55,7 @@ public class ModerationService {
             );
 
             String response = restClient.post()
-                    .uri("/v1beta/models/gemma-4-26b:generateContent?key=" + geminiApiKey)
+                    .uri("/v1beta/models/" + geminiModel + ":generateContent?key=" + geminiApiKey)
                     .header("Content-Type", "application/json")
                     .body(requestBody)
                     .retrieve()
@@ -87,6 +90,12 @@ public class ModerationService {
             }
             return Map.of("approved", true);
 
+        } catch (HttpClientErrorException.NotFound nf) {
+            System.err.println("=== MODERATION ERROR: MODEL NOT FOUND ===");
+            System.err.println("Requested model: " + geminiModel);
+            System.err.println(nf.getResponseBodyAsString());
+            nf.printStackTrace();
+            return Map.of("approved", false, "reason", "Modelo de moderación no encontrado o no compatible con generateContent. Revisa la configuración de GEMINI_MODEL.");
         } catch (Exception e) {
             System.err.println("=== MODERATION ERROR ===");
             System.err.println(e.getMessage());
