@@ -96,10 +96,17 @@ public class AiSearchService {
                     .path("parts")
                     .get(0)
                     .path("text")
-                    .asText()
-                    .replaceAll("```json", "")
-                    .replaceAll("```", "")
-                    .trim();
+                    .asText();
+
+            // Safe exact JSON extraction
+            int startIndex = jsonText.indexOf('{');
+            int endIndex = jsonText.lastIndexOf('}');
+            if (startIndex != -1 && endIndex != -1 && startIndex <= endIndex) {
+                jsonText = jsonText.substring(startIndex, endIndex + 1);
+            } else {
+                // Fallback cleaning if no brackets found strictly
+                jsonText = jsonText.replace("```json", "").replace("```", "").trim();
+            }
 
             System.out.println("=== EXTRACTED FILTERS ===");
             System.out.println(jsonText);
